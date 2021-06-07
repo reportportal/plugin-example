@@ -6,12 +6,17 @@ import com.epam.reportportal.extension.common.IntegrationTypeProperties;
 import com.epam.reportportal.extension.event.PluginEvent;
 import com.epam.reportportal.extension.event.StartLaunchEvent;
 import com.epam.reportportal.extension.example.command.binary.GetFileCommand;
+import com.epam.reportportal.extension.example.command.entity.CreateEntityCommand;
+import com.epam.reportportal.extension.example.command.entity.DeleteEntityCommand;
+import com.epam.reportportal.extension.example.command.entity.GetProjectEntities;
 import com.epam.reportportal.extension.example.command.utils.RequestEntityConverter;
+import com.epam.reportportal.extension.example.dao.EntityRepository;
+import com.epam.reportportal.extension.example.dao.impl.EntityRepositoryImpl;
 import com.epam.reportportal.extension.example.event.launch.ExampleStartLaunchEventListener;
 import com.epam.reportportal.extension.example.event.plugin.ExamplePluginEventListener;
 import com.epam.reportportal.extension.example.event.plugin.PluginEventHandlerFactory;
 import com.epam.reportportal.extension.example.info.impl.PluginInfoProviderImpl;
-import com.epam.reportportal.extension.example.service.utils.JsonbConverter;
+import com.epam.reportportal.extension.example.service.EntityService;
 import com.epam.reportportal.extension.example.utils.MemoizingSupplier;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.dao.LaunchRepository;
@@ -34,7 +39,6 @@ import org.springframework.jdbc.datasource.init.ResourceDatabasePopulator;
 
 import javax.annotation.PostConstruct;
 import javax.sql.DataSource;
-import javax.validation.Validator;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -61,21 +65,21 @@ public class ExampleExtension implements ReportPortalExtensionPoint, DisposableB
 
 	private final Supplier<Map<String, PluginCommand<?>>> pluginCommandMapping = new MemoizingSupplier<>(this::getCommands);
 
-	private final Supplier<ApplicationListener<PluginEvent>> pluginLoadedListener;
-	private final Supplier<ApplicationListener<StartLaunchEvent>> startLaunchEventListenerSupplier;
-
 	private final ObjectMapper objectMapper;
 	private final RequestEntityConverter requestEntityConverter;
-	private final JsonbConverter jsonbConverter;
+
+	private final Supplier<ApplicationListener<PluginEvent>> pluginLoadedListenerSupplier;
+	private final Supplier<ApplicationListener<StartLaunchEvent>> startLaunchEventListenerSupplier;
+
+	private final Supplier<EntityRepository> entityRepositorySupplier;
+
+	private final Supplier<EntityService> entityServiceSupplier;
 
 	@Autowired
 	private ApplicationContext applicationContext;
 
 	@Autowired
 	private DataSource dataSource;
-
-	@Autowired
-	private Validator validator;
 
 	@Autowired
 	private DSLContext dsl;
@@ -92,17 +96,19 @@ public class ExampleExtension implements ReportPortalExtensionPoint, DisposableB
 	public ExampleExtension(Map<String, Object> initParams) {
 		resourcesDir = IntegrationTypeProperties.RESOURCES_DIRECTORY.getValue(initParams).map(String::valueOf).orElse("");
 		objectMapper = configureObjectMapper();
-		jsonbConverter = new JsonbConverter(objectMapper);
 
-		pluginLoadedListener = new MemoizingSupplier<>(() -> new ExamplePluginEventListener(PLUGIN_ID,
+		pluginLoadedListenerSupplier = new MemoizingSupplier<>(() -> new ExamplePluginEventListener(PLUGIN_ID,
 				new PluginEventHandlerFactory(integrationTypeRepository,
 						new PluginInfoProviderImpl(resourcesDir, BINARY_DATA_PROPERTIES_FILE_ID)
 				)
 		));
-
 		startLaunchEventListenerSupplier = new MemoizingSupplier<>(() -> new ExampleStartLaunchEventListener(launchRepository));
 
 		requestEntityConverter = new RequestEntityConverter(objectMapper);
+
+		entityRepositorySupplier = new MemoizingSupplier<>(() -> new EntityRepositoryImpl(dsl));
+
+		entityServiceSupplier = new MemoizingSupplier<>(() -> new EntityService(entityRepositorySupplier.get()));
 	}
 
 	protected ObjectMapper configureObjectMapper() {
@@ -136,8 +142,16 @@ public class ExampleExtension implements ReportPortalExtensionPoint, DisposableB
 		ApplicationEventMulticaster applicationEventMulticaster = applicationContext.getBean(AbstractApplicationContext.APPLICATION_EVENT_MULTICASTER_BEAN_NAME,
 				ApplicationEventMulticaster.class
 		);
-		applicationEventMulticaster.addApplicationListener(pluginLoadedListener.get());
+		applicationEventMulticaster.addApplicationListener(pluginLoadedListenerSupplier.get());
 		applicationEventMulticaster.addApplicationListener(startLaunchEventListenerSupplier.get());
+	}
+
+	private void initSchema() throws IOException {
+		try (Stream<Path> paths = Files.list(Paths.get(resourcesDir, SCHEMA_SCRIPTS_DIR))) {
+			FileSystemResource[] scriptResources = paths.sorted().map(FileSystemResource::new).toArray(FileSystemResource[]::new);
+			ResourceDatabasePopulator resourceDatabasePopulator = new ResourceDatabasePopulator(scriptResources);
+			resourceDatabasePopulator.execute(dataSource);
+		}
 	}
 
 	@Override
@@ -149,22 +163,18 @@ public class ExampleExtension implements ReportPortalExtensionPoint, DisposableB
 		ApplicationEventMulticaster applicationEventMulticaster = applicationContext.getBean(AbstractApplicationContext.APPLICATION_EVENT_MULTICASTER_BEAN_NAME,
 				ApplicationEventMulticaster.class
 		);
-		applicationEventMulticaster.removeApplicationListener(pluginLoadedListener.get());
+		applicationEventMulticaster.removeApplicationListener(pluginLoadedListenerSupplier.get());
 		applicationEventMulticaster.removeApplicationListener(startLaunchEventListenerSupplier.get());
 	}
 
 	private Map<String, PluginCommand<?>> getCommands() {
 		Map<String, PluginCommand<?>> pluginCommandMapping = new HashMap<>();
-		GetFileCommand getFileCommand = new GetFileCommand(resourcesDir, BINARY_DATA_PROPERTIES_FILE_ID);
-		pluginCommandMapping.put("getFile", getFileCommand);
+		pluginCommandMapping.put("getFile", new GetFileCommand(resourcesDir, BINARY_DATA_PROPERTIES_FILE_ID));
+		pluginCommandMapping.put("createEntity",
+				new CreateEntityCommand(projectRepository, requestEntityConverter, entityServiceSupplier.get())
+		);
+		pluginCommandMapping.put("getProjectEntities", new GetProjectEntities(projectRepository, entityServiceSupplier.get()));
+		pluginCommandMapping.put("deleteEntity", new DeleteEntityCommand(projectRepository, entityServiceSupplier.get()));
 		return pluginCommandMapping;
-	}
-
-	private void initSchema() throws IOException {
-		try (Stream<Path> paths = Files.list(Paths.get(resourcesDir, SCHEMA_SCRIPTS_DIR))) {
-			FileSystemResource[] scriptResources = paths.sorted().map(FileSystemResource::new).toArray(FileSystemResource[]::new);
-			ResourceDatabasePopulator resourceDatabasePopulator = new ResourceDatabasePopulator(scriptResources);
-			resourceDatabasePopulator.execute(dataSource);
-		}
 	}
 }

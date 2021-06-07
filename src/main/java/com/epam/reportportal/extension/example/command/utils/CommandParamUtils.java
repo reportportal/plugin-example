@@ -19,8 +19,8 @@ public final class CommandParamUtils {
 
 	public static final String ID_PARAM = "id";
 	public static final String PROJECT_ID_PARAM = "projectId";
-	public static final String LAUNCH_ID_PARAM = "launchId";
 	public static final String ENTITY_PARAM = "entity";
+	public static final String URL_PARAM = "url";
 
 	private CommandParamUtils() {
 		//static only
