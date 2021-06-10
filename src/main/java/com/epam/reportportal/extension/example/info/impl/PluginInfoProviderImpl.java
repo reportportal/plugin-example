@@ -22,9 +22,15 @@ public class PluginInfoProviderImpl implements PluginInfoProvider {
 
 	private static final String BINARY_DATA_KEY = "binaryData";
 	private static final String DESCRIPTION_KEY = "description";
+	private static final String METADATA_KEY = "metadata";
 
 	private static final String PLUGIN_DESCRIPTION =
 			"Example plugin";
+	public static final Map<String, Object> PLUGIN_METADATA = new HashMap<>();
+	static {
+        PLUGIN_METADATA.put("multiple", true);
+    }
+
 
 	private final String resourcesDir;
 	private final String propertyFile;
@@ -38,6 +44,7 @@ public class PluginInfoProviderImpl implements PluginInfoProvider {
 	public IntegrationType provide(IntegrationType integrationType) {
 		loadBinaryDataInfo(integrationType);
 		updateDescription(integrationType);
+		updateMetadata(integrationType);
 		return integrationType;
 	}
 
@@ -64,4 +71,9 @@ public class PluginInfoProviderImpl implements PluginInfoProvider {
 		Map<String, Object> details = integrationType.getDetails().getDetails();
 		details.put(DESCRIPTION_KEY, PLUGIN_DESCRIPTION);
 	}
+
+	private void updateMetadata(IntegrationType integrationType) {
+        Map<String, Object> details = integrationType.getDetails().getDetails();
+        details.put(METADATA_KEY, PLUGIN_METADATA);
+    }
 }
