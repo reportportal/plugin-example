@@ -5,6 +5,7 @@ import com.epam.reportportal.extension.example.event.EventHandlerFactory;
 import com.epam.reportportal.extension.example.event.handler.EventHandler;
 import com.epam.reportportal.extension.example.event.handler.plugin.PluginLoadedEventHandler;
 import com.epam.reportportal.extension.example.info.PluginInfoProvider;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 
 import java.util.HashMap;
@@ -19,9 +20,12 @@ public class PluginEventHandlerFactory implements EventHandlerFactory<PluginEven
 
 	private final Map<String, EventHandler<PluginEvent>> eventHandlerMapping;
 
-	public PluginEventHandlerFactory(IntegrationTypeRepository integrationTypeRepository, PluginInfoProvider pluginInfoProvider) {
+	public PluginEventHandlerFactory(IntegrationTypeRepository integrationTypeRepository, IntegrationRepository integrationRepository,
+			PluginInfoProvider pluginInfoProvider) {
 		this.eventHandlerMapping = new HashMap<>();
-		this.eventHandlerMapping.put(LOAD_KEY, new PluginLoadedEventHandler(integrationTypeRepository, pluginInfoProvider));
+		this.eventHandlerMapping.put(LOAD_KEY,
+				new PluginLoadedEventHandler(integrationTypeRepository, integrationRepository, pluginInfoProvider)
+		);
 	}
 
 	@Override

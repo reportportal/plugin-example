@@ -18,6 +18,7 @@ import com.epam.reportportal.extension.example.event.plugin.PluginEventHandlerFa
 import com.epam.reportportal.extension.example.info.impl.PluginInfoProviderImpl;
 import com.epam.reportportal.extension.example.service.EntityService;
 import com.epam.reportportal.extension.example.utils.MemoizingSupplier;
+import com.epam.ta.reportportal.dao.IntegrationRepository;
 import com.epam.ta.reportportal.dao.IntegrationTypeRepository;
 import com.epam.ta.reportportal.dao.LaunchRepository;
 import com.epam.ta.reportportal.dao.ProjectRepository;
@@ -88,6 +89,9 @@ public class ExampleExtension implements ReportPortalExtensionPoint, DisposableB
 	private IntegrationTypeRepository integrationTypeRepository;
 
 	@Autowired
+	private IntegrationRepository integrationRepository;
+
+	@Autowired
 	private ProjectRepository projectRepository;
 
 	@Autowired
@@ -99,6 +103,7 @@ public class ExampleExtension implements ReportPortalExtensionPoint, DisposableB
 
 		pluginLoadedListenerSupplier = new MemoizingSupplier<>(() -> new ExamplePluginEventListener(PLUGIN_ID,
 				new PluginEventHandlerFactory(integrationTypeRepository,
+						integrationRepository,
 						new PluginInfoProviderImpl(resourcesDir, BINARY_DATA_PROPERTIES_FILE_ID)
 				)
 		));
