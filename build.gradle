@@ -136,6 +136,5 @@ task assemblePlugins(type: Copy) {
     dependsOn subprojects.assemblePlugin
 }
 
-//TODO after ui module
-//compileJava.dependsOn npm_run_build
+compileJava.dependsOn npm_run_build
 

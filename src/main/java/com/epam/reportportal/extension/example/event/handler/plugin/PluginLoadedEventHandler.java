@@ -10,15 +10,13 @@ import com.epam.ta.reportportal.entity.integration.IntegrationParams;
 import com.epam.ta.reportportal.entity.integration.IntegrationType;
 
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:ivan_budayeu@epam.com">Ivan Budayeu</a>
  */
 public class PluginLoadedEventHandler implements EventHandler<PluginEvent> {
-
-	public static final String HIDDEN_KEY = "hidden";
 
 	private final IntegrationTypeRepository integrationTypeRepository;
 	private final IntegrationRepository integrationRepository;
@@ -48,7 +46,7 @@ public class PluginLoadedEventHandler implements EventHandler<PluginEvent> {
 			integration.setCreationDate(LocalDateTime.now());
 			integration.setEnabled(true);
 			integration.setCreator("SYSTEM");
-			integration.setParams(new IntegrationParams(Map.of(HIDDEN_KEY, true)));
+			integration.setParams(new IntegrationParams(new HashMap<>()));
 			integrationRepository.save(integration);
 		}
 	}
