@@ -1,6 +1,6 @@
 # Plugin example for RP API
 
-Quality gate plugin for Epam Report Portal
+Example plugin for Epam Report Portal
 UI
 Preconditions:
 
