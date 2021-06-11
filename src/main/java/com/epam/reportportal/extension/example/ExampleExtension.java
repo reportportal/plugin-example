@@ -180,6 +180,7 @@ public class ExampleExtension implements ReportPortalExtensionPoint, DisposableB
 		);
 		pluginCommandMapping.put("getProjectEntities", new GetProjectEntities(projectRepository, entityServiceSupplier.get()));
 		pluginCommandMapping.put("deleteEntity", new DeleteEntityCommand(projectRepository, entityServiceSupplier.get()));
+		pluginCommandMapping.put("testConnection", (integration, params) -> true);
 		return pluginCommandMapping;
 	}
 }
