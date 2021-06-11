@@ -28,6 +28,7 @@ public class PluginInfoProviderImpl implements PluginInfoProvider {
 			"Example plugin";
 	public static final Map<String, Object> PLUGIN_METADATA = new HashMap<>();
 	static {
+        PLUGIN_METADATA.put("embedded", true);
         PLUGIN_METADATA.put("multiple", true);
     }
 
