@@ -30,6 +30,10 @@ const config = {
       utils: path.resolve(__dirname, 'src/utils'),
     },
   },
+  // TODO: due to the minification issues it is temporary disabled
+  optimization: {
+    minimize: false
+  },
 };
 
 module.exports = config;
