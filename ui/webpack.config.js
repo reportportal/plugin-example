@@ -33,7 +33,6 @@ const config = {
               modules: {
                 localIdentName: `${pluginName}_[name]__[local]--[hash:base64:5]`,
               },
-              // importLoaders: 1,
             },
           },
           'sass-loader',
