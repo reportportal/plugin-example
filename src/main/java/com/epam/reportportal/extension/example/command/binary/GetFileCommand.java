@@ -82,4 +82,8 @@ public class GetFileCommand implements PluginCommand<Boolean> {
 		}).orElseThrow(() -> new ReportPortalException(ErrorType.UNABLE_TO_LOAD_BINARY_DATA, "Unable to obtain response"));
 	}
 
+	@Override
+	public String getName() {
+		return "getFile";
+	}
 }

@@ -33,4 +33,9 @@ public class CreateEntityCommand extends ProjectManagerCommand<OperationCompleti
 		RequestEntityValidator.validate(createRq);
 		return entityService.create(projectId, createRq);
 	}
+
+	@Override
+	public String getName() {
+		return "createEntity";
+	}
 }

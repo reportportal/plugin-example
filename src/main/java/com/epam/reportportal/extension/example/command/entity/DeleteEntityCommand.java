@@ -23,4 +23,9 @@ public class DeleteEntityCommand extends ProjectManagerCommand<OperationCompleti
 		final Long id = CommandParamUtils.retrieveLong(params, CommandParamUtils.ID_PARAM);
 		return entityService.delete(id);
 	}
+
+	@Override
+	public String getName() {
+		return "deleteEntity";
+	}
 }

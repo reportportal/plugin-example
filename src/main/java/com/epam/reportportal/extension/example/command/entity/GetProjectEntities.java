@@ -34,4 +34,9 @@ public class GetProjectEntities extends ProjectMemberCommand<List<EntityResource
 				.ifPresent(url -> entities.forEach(e -> e.setUrl(url + "/" + e.getName())));
 		return entities;
 	}
+
+	@Override
+	public String getName() {
+		return "getProjectEntities";
+	}
 }

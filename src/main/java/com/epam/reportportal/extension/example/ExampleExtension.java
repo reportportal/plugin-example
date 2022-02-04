@@ -1,11 +1,14 @@
 package com.epam.reportportal.extension.example;
 
+import com.epam.reportportal.extension.CommonPluginCommand;
 import com.epam.reportportal.extension.PluginCommand;
 import com.epam.reportportal.extension.ReportPortalExtensionPoint;
 import com.epam.reportportal.extension.common.IntegrationTypeProperties;
 import com.epam.reportportal.extension.event.PluginEvent;
 import com.epam.reportportal.extension.event.StartLaunchEvent;
+import com.epam.reportportal.extension.example.command.adapter.PluginCommandAdapter;
 import com.epam.reportportal.extension.example.command.binary.GetFileCommand;
+import com.epam.reportportal.extension.example.command.connection.TestConnectionCommand;
 import com.epam.reportportal.extension.example.command.entity.CreateEntityCommand;
 import com.epam.reportportal.extension.example.command.entity.DeleteEntityCommand;
 import com.epam.reportportal.extension.example.command.entity.GetProjectEntities;
@@ -48,6 +51,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -65,6 +69,7 @@ public class ExampleExtension implements ReportPortalExtensionPoint, DisposableB
 	private final String resourcesDir;
 
 	private final Supplier<Map<String, PluginCommand<?>>> pluginCommandMapping = new MemoizingSupplier<>(this::getCommands);
+	private final Supplier<Map<String, CommonPluginCommand<?>>> commonCommandsMapping = new MemoizingSupplier<>(this::getCommonCommandsMapping);
 
 	private final ObjectMapper objectMapper;
 	private final RequestEntityConverter requestEntityConverter;
@@ -133,7 +138,12 @@ public class ExampleExtension implements ReportPortalExtensionPoint, DisposableB
 	}
 
 	@Override
-	public PluginCommand<?> getCommandToExecute(String commandName) {
+	public CommonPluginCommand getCommonCommand(String commandName) {
+		return commonCommandsMapping.get().get(commandName);
+	}
+
+	@Override
+	public PluginCommand getIntegrationCommand(String commandName) {
 		return pluginCommandMapping.get().get(commandName);
 	}
 
@@ -174,13 +184,27 @@ public class ExampleExtension implements ReportPortalExtensionPoint, DisposableB
 
 	private Map<String, PluginCommand<?>> getCommands() {
 		Map<String, PluginCommand<?>> pluginCommandMapping = new HashMap<>();
-		pluginCommandMapping.put("getFile", new GetFileCommand(resourcesDir, BINARY_DATA_PROPERTIES_FILE_ID));
-		pluginCommandMapping.put("createEntity",
-				new CreateEntityCommand(projectRepository, requestEntityConverter, entityServiceSupplier.get())
+		final GetFileCommand getFileCommand = new GetFileCommand(resourcesDir, BINARY_DATA_PROPERTIES_FILE_ID);
+		final CreateEntityCommand createEntityCommand = new CreateEntityCommand(projectRepository,
+				requestEntityConverter,
+				entityServiceSupplier.get()
 		);
-		pluginCommandMapping.put("getProjectEntities", new GetProjectEntities(projectRepository, entityServiceSupplier.get()));
-		pluginCommandMapping.put("deleteEntity", new DeleteEntityCommand(projectRepository, entityServiceSupplier.get()));
-		pluginCommandMapping.put("testConnection", (integration, params) -> true);
+		final GetProjectEntities getProjectEntities = new GetProjectEntities(projectRepository, entityServiceSupplier.get());
+		final DeleteEntityCommand deleteEntityCommand = new DeleteEntityCommand(projectRepository, entityServiceSupplier.get());
+		final TestConnectionCommand testConnectionCommand = new TestConnectionCommand();
+		pluginCommandMapping.put(getFileCommand.getName(), getFileCommand);
+		pluginCommandMapping.put(createEntityCommand.getName(), createEntityCommand);
+		pluginCommandMapping.put(getProjectEntities.getName(), getProjectEntities);
+		pluginCommandMapping.put(deleteEntityCommand.getName(), deleteEntityCommand);
+		pluginCommandMapping.put(testConnectionCommand.getName(), testConnectionCommand);
 		return pluginCommandMapping;
+	}
+
+	private Map<String, CommonPluginCommand<?>> getCommonCommandsMapping() {
+		return pluginCommandMapping.get()
+				.values()
+				.stream()
+				.map(PluginCommandAdapter::new)
+				.collect(Collectors.toMap(CommonPluginCommand::getName, c -> c));
 	}
 }
