@@ -134,6 +134,7 @@ public class ExampleExtension implements ReportPortalExtensionPoint, DisposableB
 	public Map<String, ?> getPluginParams() {
 		Map<String, Object> params = new HashMap<>();
 		params.put(ALLOWED_COMMANDS, new ArrayList<>(pluginCommandMapping.get().keySet()));
+		params.put(COMMON_COMMANDS, new ArrayList<>(commonCommandsMapping.get().keySet()));
 		return params;
 	}
 
