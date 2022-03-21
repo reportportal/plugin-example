@@ -1,4 +1,5 @@
 const path = require('path');
+const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
 const pjson = require('./package.json');
 
 const pluginName = pjson.name;
@@ -55,6 +56,25 @@ const config = {
       },
     ],
   },
+  plugins: [
+    new ModuleFederationPlugin({
+      name: pluginName,
+      filename: `${pluginName}.js`,
+      shared: {
+        react: {
+          import: 'react',
+          shareKey: 'react',
+          shareScope: 'default',
+        },
+        'react-dom': {},
+      },
+      exposes: {
+        './examplePluginTab': './src/components/examplePluginTab',
+        './integrationSettings': './src/components/integrationSettings',
+        './integrationFormFields': './src/components/integrationFormFields',
+      },
+    }),
+  ],
 };
 
 module.exports = config;
