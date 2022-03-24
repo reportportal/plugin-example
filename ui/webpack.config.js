@@ -1,18 +1,19 @@
 const path = require('path');
+const CopyPlugin = require('copy-webpack-plugin');
 const ModuleFederationPlugin = require('webpack/lib/container/ModuleFederationPlugin');
 const pjson = require('./package.json');
 
 const pluginName = pjson.name;
 
 const config = {
-  entry: ['./src/index.js'],
+  entry: './src',
   output: {
-    path: path.resolve(__dirname, 'build'),
-    filename: 'main.js',
-    libraryTarget: 'umd',
+    path: path.resolve(__dirname, 'build'), // change to 'build/public' to allow public access to resources
+    publicPath: 'auto',
+    clean: true,
   },
   resolve: {
-    extensions: ['.js', '.jsx', '.sass', '.scss', '.css'],
+    extensions: ['.js', '.jsx', '.json', '.sass', '.scss', '.css'],
     alias: {
       components: path.resolve(__dirname, 'src/components'),
       constants: path.resolve(__dirname, 'src/constants'),
@@ -58,21 +59,30 @@ const config = {
   },
   plugins: [
     new ModuleFederationPlugin({
-      name: pluginName,
-      filename: `${pluginName}.js`,
+      name: 'example_plugin',
+      filename: `remoteEntity.js`,
       shared: {
         react: {
           import: 'react',
           shareKey: 'react',
           shareScope: 'default',
+          singleton: true,
         },
-        'react-dom': {},
+        'react-dom': {
+          singleton: true,
+        },
+        'react-redux': {
+          singleton: true,
+        },
       },
       exposes: {
         './examplePluginTab': './src/components/examplePluginTab',
         './integrationSettings': './src/components/integrationSettings',
         './integrationFormFields': './src/components/integrationFormFields',
       },
+    }),
+    new CopyPlugin({
+      patterns: [{ from: path.resolve(__dirname, './src/metadata.json') }],
     }),
   ],
 };

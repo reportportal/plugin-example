@@ -1,4 +1,34 @@
 .examplePluginTab {
   display: inline-block;
-  color: $COLOR--primary;
+  color: $COLOR--charcoal-grey;
+}
+
+.button {
+  box-sizing: border-box;
+  border: 1px solid;
+  padding: 0 10px;
+  margin: 5px;
+  color: $COLOR--white-two;
+  font-size: 16px;
+  line-height: 25px;
+  letter-spacing: normal;
+  text-shadow: none;
+  cursor: pointer;
+  outline: none;
+
+  background-color: $COLOR--primary;
+  border-color: $COLOR--primary;
+
+  &:hover:not(.disabled) {
+    background-color: darken($COLOR--primary, 15%);
+    border-color: darken($COLOR--primary, 15%);
+  }
+  &:active:not(.disabled) {
+    background-color: darken($COLOR--primary, 30%);
+    border-color: darken($COLOR--primary, 30%);
+  }
+}
+
+.text {
+  color: darken($COLOR--primary, 15%);
 }

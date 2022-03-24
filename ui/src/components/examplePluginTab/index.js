@@ -1,1 +1,5 @@
-export { ExamplePluginTab } from './examplePluginTab';
+import { ExamplePluginTab } from './examplePluginTab';
+
+export { ExamplePluginTab };
+
+export default ExamplePluginTab;
