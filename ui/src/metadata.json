@@ -1,5 +1,4 @@
 {
-  "pluginName": "example",
   "scope": "example_plugin",
   "extensions": [
     {

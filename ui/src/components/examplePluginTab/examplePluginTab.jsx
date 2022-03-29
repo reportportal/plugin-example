@@ -1,8 +1,7 @@
 import React from 'react';
 import styles from './examplePluginTab.scss';
 
-export const ExamplePluginTab = (props) => {
-  const { meta: { requester = 'Mocked' } = {} } = props;
+export const ExamplePluginTab = () => {
   const [counter, setCount] = React.useState(0);
 
   const increase = () => {
@@ -14,7 +13,8 @@ export const ExamplePluginTab = (props) => {
 
   return (
     <div className={styles.examplePluginTab}>
-      Hello world! Hello, {requester}! <br />
+      Hello world!
+      <br />
       <button className={styles.button} onClick={increase}>
         Increase
       </button>
