@@ -1,15 +1,11 @@
+import React from 'react';
+
 export const IntegrationFormFields = (props) => {
+  const { initialize, disabled, lineAlign, initialData, ...extensionProps } = props;
   const {
-    initialize,
-    disabled,
-    lineAlign,
-    initialData,
-    ...extensionProps
-  } = props;
-  const {
-    lib: { React },
+    // TODO: share it from the core via WMF
     components: { IntegrationFormField, FieldErrorHint, Input },
-    validators: { requiredField }
+    validators: { requiredField },
   } = extensionProps;
   React.useEffect(() => {
     initialize(initialData);

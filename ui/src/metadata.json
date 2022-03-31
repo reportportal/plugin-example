@@ -1,0 +1,23 @@
+{
+  "scope": "example_plugin",
+  "extensions": [
+    {
+      "name": "examplePluginTab",
+      "title": "Example plugin",
+      "type": "uiExtension:settingsTab",
+      "moduleName": "./examplePluginTab"
+    },
+    {
+      "name": "integrationSettings",
+      "title": "Example plugin settings",
+      "type": "uiExtension:integrationSettings",
+      "moduleName": "./integrationSettings"
+    },
+    {
+      "name": "integrationFormFields",
+      "title": "Example plugin fields",
+      "type": "uiExtension:integrationFormFields",
+      "moduleName": "./integrationFormFields"
+    }
+  ]
+}

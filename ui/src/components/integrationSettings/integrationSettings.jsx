@@ -1,12 +1,10 @@
-import { IntegrationFormFields } from "../integrationFormFields";
+import React from 'react';
+import { IntegrationFormFields } from '../integrationFormFields';
 
 export const IntegrationSettings = (props) => {
+  const { data, goToPreviousPage, onUpdate, isGlobal, ...extensionProps } = props;
   const {
-    data, goToPreviousPage, onUpdate, isGlobal,
-    ...extensionProps
-  } = props;
-  const {
-    lib: { React },
+    // TODO: share it from the core via WMF
     components: { IntegrationSettings: IntegrationSettingsContainer },
   } = extensionProps;
 
