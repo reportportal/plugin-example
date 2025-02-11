@@ -1,3 +1,5 @@
+# This repository is outdated and marked as public archive, use [plugin-template](https://github.com/reportportal/plugin-template) repository as a start for your plugin.
+
 # Plugin example for Report Portal
 
 ## UI
